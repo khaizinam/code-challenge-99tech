@@ -10,21 +10,29 @@ A basic backend server built with **ExpressJS** and **TypeScript**, providing a 
 - Delete a resource.
 - Persistent data storage using **SQLite3** and **Knex**.
 
-## Prerequisites
-- Node.js (v16+)
-- npm or yarn
+## Configuration
 
-## Installation
-
-1. Navigate to the project directory:
+1. Create/Update a `.env` file in the root of `src/problem5`:
    ```bash
-   cd src/problem5
+   DB_CLIENT=sqlite3 # or mysql2
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+2. If using MySQL:
+   - Ensure the database exists.
+   - Fill in `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `.env`.
+
+## Database Migrations & Seeds
+
+This project uses **Knex** for database management.
+
+- **Run Migrations:**
+  ```bash
+  npx knex migrate:latest --knexfile src/knexfile.ts
+  ```
+- **Run Seeds:**
+  ```bash
+  npx knex seed:run --knexfile src/knexfile.ts
+  ```
 
 ## Running the Application
 

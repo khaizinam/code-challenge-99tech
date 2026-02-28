@@ -3,6 +3,11 @@ node_modules/
 
 # Build output
 dist/
+*.js
+!package.json
+!knexfile.ts
+*.d.ts
+*.map
 
 # Database
 *.sqlite

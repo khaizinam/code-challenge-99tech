@@ -1,73 +1,175 @@
 # Problem 5: Crude Server
 
-A basic backend server built with **ExpressJS** and **TypeScript**, providing a CRUD interface for managing resources.
+A production-ready basic backend server built with **ExpressJS** and **TypeScript**. This service provides a robust CRUD interface for resource management with persistent data storage.
 
-## Features
-- Create a resource.
-- List resources with basic filters (name, category, status).
-- Get details of a single resource.
-- Update resource details.
-- Delete a resource.
-- Persistent data storage using **SQLite3** and **Knex**.
+## 🚀 Features
+- **Full CRUD**: Create, Read, Update, and Delete resources.
+- **Search & Filter**: List resources with advanced filtering (name, category, status).
+- **Database Agnostic**: Configured to support both **SQLite3** and **MySQL** via Knex.
+- **Data Integrity**: migration-based schema management.
+- **Developer Friendly**: TypeScript with hot-reloading and clear structure.
 
-## Configuration
+---
 
-1. Create/Update a `.env` file in the root of `src/problem5`:
-   ```bash
-   DB_CLIENT=sqlite3 # or mysql2
+## 🛠️ Setup Instructions
+
+### 1. Installation
+Navigate to the project directory and install dependencies using `yarn` (or `npm`):
+```bash
+cd src/problem5
+yarn install
+```
+
+### 2. Configuration (`.env`)
+Create a `.env` file in `src/problem5/` (mirroring `.env.example` if available). 
+Default configuration uses SQLite for zero-config startup:
+
+```env
+PORT=3000
+DB_CLIENT=sqlite3 # Set to 'mysql2' for MySQL
+```
+
+**For MySQL setup:**
+1. Create a database in your MySQL server.
+2. Uncomment and fill the following in `.env`:
+   ```env
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=your_user
+   DB_PASSWORD=your_password
+   DB_NAME=your_db_name
    ```
 
-2. If using MySQL:
-   - Ensure the database exists.
-   - Fill in `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `.env`.
+### 3. Database Initialization
+Run migrations and seeds to prepare your database:
 
-## Database Migrations & Seeds
-
-This project uses **Knex** for database management.
-
-- **Run Migrations:**
-  ```bash
-  npx knex migrate:latest --knexfile src/knexfile.ts
-  ```
-- **Run Seeds:**
-  ```bash
-  npx knex seed:run --knexfile src/knexfile.ts
-  ```
-
-## Running the Application
-
-### Development Mode (with hot-reload)
 ```bash
-npm run dev
+# Run migrations (create tables)
+npx knex migrate:latest --knexfile src/knexfile.ts
+
+# Run seeds (optional - insert sample data)
+npx knex seed:run --knexfile src/knexfile.ts
 ```
-The server will start at `http://localhost:3000`.
+
+---
+
+## 🏃 Running the Application
+
+### Development Mode
+Runs the server with `nodemon` for automatic restarts:
+```bash
+yarn dev
+```
+Server URL: `http://localhost:3000`
 
 ### Production Mode
-1. Build the TypeScript files:
-   ```bash
-   npm run build
-   ```
-2. Start the server:
-   ```bash
-   npm start
-   ```
+Builds the project to Javascript and runs the production server:
+```bash
+yarn build
+yarn start
+```
 
-## API Endpoints
+---
 
-| Method | Endpoint | Description | Query Params (Filter) |
+## 📡 API Documentation
+
+### Base URL: `http://localhost:3000/resources`
+
+| Method | Endpoint | Description | Filters |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/resources` | Create a new resource | N/A |
-| `GET` | `/resources` | List all resources | `name`, `category`, `status` |
-| `GET` | `/resources/:id` | Get details of a resource | N/A |
-| `PUT` | `/resources/:id` | Update resource details | N/A |
-| `DELETE` | `/resources/:id` | Delete a resource | N/A |
+| `POST` | `/` | Create a new resource | - |
+| `GET` | `/` | List resources | `name`, `category`, `status` |
+| `GET` | `/:id` | Get resource details | - |
+| `PUT` | `/:id` | Update resource | - |
+| `DELETE` | `/:id` | Delete resource | - |
 
-### Example Create Request Body
+### Example Request Payloads
+
+#### **Create Resource** (`POST /resources`)
 ```json
 {
-  "name": "Project Alpha",
-  "description": "A secret project",
-  "category": "High-Priority",
+  "name": "Task Management System",
+  "description": "API for managing internal tasks",
+  "category": "Backend",
   "status": 1
 }
+```
+
+#### **Filter Resources** (`GET /resources?category=Backend&status=1`)
+Returns a list of active backend resources.
+
+#### **Update Resource** (`PUT /resources/1`)
+```json
+{
+  "name": "Updated Task System",
+  "status": 0
+}
+```
+
+### 📮 Postman Collection
+A sample Postman collection is included in the root of this problem: `postman_collection.json`. 
+You can import this file into Postman to quickly test all endpoints. It includes a `base_url` variable set to `http://localhost:3000`.
+
+---
+
+## 💎 Standardized Response Pattern
+
+All API responses follow a consistent JSON structure to ensure predictable integration for frontend or third-party consumers:
+
+### Success Response (Single Object)
+```json
+{
+  "error": false,
+  "message": "Resource fetched successfully",
+  "data": { "id": 1, "name": "Sample", ... }
+}
+```
+
+### Success Response (List with Pagination)
+```json
+{
+  "error": false,
+  "message": "Resources listed successfully",
+  "data": [
+    { "id": 1, "name": "Sample", ... },
+    { "id": 2, "name": "Example", ... }
+  ],
+  "meta": {
+    "page": 1,
+    "total_item": 50,
+    "total_page": 5
+  }
+}
+```
+
+### Error Response
+```json
+{
+  "error": true,
+  "message": "Resource not found",
+  "data": null
+}
+```
+
+---
+
+## 🛡️ Error Handling
+
+The application implements a multi-layer error handling strategy to maintain stability and security:
+
+1.  **Global Error Middleware**: A centralized middleware captures all unhandled exceptions (e.g., database connection issues, code crashes) and returns a clean 500 Internal Server Error response.
+2.  **Controller-Level Try-Catch**: Each controller method is wrapped in `try-catch` blocks to handle specific runtime errors and provide meaningful debug logs.
+3.  **404 Handler**: Unknown API routes are automatically intercepted and returned as a standardized JSON error instead of default HTML pages.
+
+---
+
+## 🏗️ Project Structure
+```text
+src/
+├── config/          # Database connection
+├── controllers/     # Request handlers (CRUD logic)
+├── db/              # Migrations and Seeds
+├── routes/          # API Route definitions
+├── index.ts         # App entry point
+└── knexfile.ts      # Knex configuration
 ```
